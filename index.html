@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RankedTiers Leaderboard</title>
+<style>
+  :root {
+    --bg: #14161B;
+    --surface: #1B1E25;
+    --surface-2: #23272F;
+    --border: #2E323C;
+    --text: #F2F1EC;
+    --text-dim: #9A9CA4;
+    --accent: #E85D3D;
+
+    --ht1: #E85D3D; --ht1-bg: #3A241C;
+    --lt1: #E8A13D; --lt1-bg: #3A2E1C;
+    --ht2: #E8D23D; --ht2-bg: #3A351C;
+    --lt2: #9BD84A; --lt2-bg: #26361A;
+    --ht3: #4AD8A0; --ht3-bg: #1A3630;
+    --lt3: #4AC1D8; --lt3-bg: #1A3236;
+    --ht4: #4A8FD8; --ht4-bg: #1A2836;
+    --lt4: #7A6AE0; --lt4-bg: #251F3D;
+    --ht5: #B06AE0; --ht5-bg: #2E1F3D;
+    --lt5: #6E7180; --lt5-bg: #23262E;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+
+  .display {
+    font-family: 'Arial Narrow', 'Helvetica Neue Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  header {
+    padding: 3rem 1.5rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  header .eyebrow {
+    color: var(--accent);
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    margin: 0.4rem 0 0.2rem;
+  }
+
+  header p {
+    color: var(--text-dim);
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .top-player {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    vertical-align: -8px;
+    margin-right: 8px;
+    image-rendering: pixelated;
+  }
+
+  .top-player .crown {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background: var(--ht1-bg);
+    color: var(--ht1);
+    flex-shrink: 0;
+    object-fit: cover;
+    image-rendering: pixelated;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .top-player .info { flex: 1; }
+  .top-player .name { font-size: 1.4rem; font-weight: 700; }
+  .top-player .sub { color: var(--text-dim); font-size: 0.85rem; }
+  .top-player .rating {
+    font-size: 2rem;
+    text-align: right;
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .controls input, .controls select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.55rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .controls input { flex: 1; min-width: 160px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s ease;
+  }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+
+  td { padding: 0.7rem 1rem; font-size: 0.92rem; }
+  td.rank { color: var(--text-dim); width: 40px; }
+  td.rating { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .empty, .error {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 3rem 1rem;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 2rem 1rem 3rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Ranked duels</div>
+  <h1 class="display">Leaderboard</h1>
+  <p id="updated-at">Loading...</p>
+</header>
+
+<main>
+  <div id="top-player-slot"></div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search a player...">
+    <select id="tier-filter">
+      <option value="">All tiers</option>
+      <option value="HT1">HT1</option><option value="LT1">LT1</option>
+      <option value="HT2">HT2</option><option value="LT2">LT2</option>
+      <option value="HT3">HT3</option><option value="LT3">LT3</option>
+      <option value="HT4">HT4</option><option value="LT4">LT4</option>
+      <option value="HT5">HT5</option><option value="LT5">LT5</option>
+    </select>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>Player</th><th>Tier</th><th style="text-align:right;">Rating</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <div id="empty" class="empty" style="display:none;">No players match that search.</div>
+</main>
+
+<footer>Data refreshes automatically from leaderboard.json</footer>
+
+<script>
+  let players = [];
+
+  function tierClass(tier) {
+    return tier ? tier.toLowerCase() : 'lt5';
+  }
+
+  function badgeStyle(tier) {
+    const t = tierClass(tier);
+    return `background: var(--${t}-bg); color: var(--${t});`;
+  }
+
+  function render() {
+    const search = document.getElementById('search').value.trim().toLowerCase();
+    const tierFilter = document.getElementById('tier-filter').value;
+
+    const filtered = players.filter(p => {
+      const matchesSearch = !search || p.name.toLowerCase().includes(search);
+      const matchesTier = !tierFilter || p.tier === tierFilter;
+      return matchesSearch && matchesTier;
+    });
+
+    const rowsEl = document.getElementById('rows');
+    const emptyEl = document.getElementById('empty');
+
+    if (filtered.length === 0) {
+      rowsEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+
+    rowsEl.innerHTML = filtered.map((p, i) => `
+      <tr>
+        <td class="rank">${i + 1}</td>
+        <td>
+          <img class="avatar" src="${avatarUrl(p.name)}" alt="" loading="lazy"
+               onerror="this.style.display='none'">${escapeHtml(p.name)}
+        </td>
+        <td><span class="badge" style="${badgeStyle(p.tier)}">${p.tier}</span></td>
+        <td class="rating">${p.rating}</td>
+      </tr>
+    `).join('');
+  }
+
+  function avatarUrl(name) {
+    return 'https://mc-heads.net/avatar/' + encodeURIComponent(name) + '/32';
+  }
+
+  function renderTopPlayer() {
+    const slot = document.getElementById('top-player-slot');
+    if (players.length === 0) { slot.innerHTML = ''; return; }
+    const top = players[0];
+    slot.innerHTML = `
+      <div class="top-player">
+        <img class="crown" src="${avatarUrl(top.name).replace('/32', '/56')}" alt=""
+             onerror="this.outerHTML='<div class=&quot;crown&quot;>#1</div>'">
+        <div class="info">
+          <div class="name">${escapeHtml(top.name)}</div>
+          <div class="sub">Currently ranked <span class="badge" style="${badgeStyle(top.tier)}">${top.tier}</span></div>
+        </div>
+        <div class="rating display">${top.rating}</div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch('leaderboard.json?_=' + Date.now());
+      if (!res.ok) throw new Error('Could not load leaderboard.json');
+      const data = await res.json();
+
+      players = (data.players || []).slice().sort((a, b) => b.rating - a.rating);
+      document.getElementById('updated-at').textContent =
+        'Updated ' + new Date(data.generatedAt || Date.now()).toLocaleString();
+
+      renderTopPlayer();
+      render();
+    } catch (err) {
+      document.getElementById('updated-at').textContent = '';
+      document.querySelector('main').innerHTML =
+        '<div class="error">Could not load leaderboard.json.<br>Make sure it is sitting next to this index.html file.</div>';
+    }
+  }
+
+  document.getElementById('search').addEventListener('input', render);
+  document.getElementById('tier-filter').addEventListener('change', render);
+
+  loadData();
+  setInterval(loadData, 60000);
+</script>
+
+</body>
+</html>
