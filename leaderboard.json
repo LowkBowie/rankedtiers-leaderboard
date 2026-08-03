@@ -1,8 +1,9 @@
 {
-  "generatedAt": "2026-08-03T16:24:16.373103074Z",
+  "generatedAt": "2026-08-03T16:25:44.955596756Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
-    "plugin": []
+    "plugin": [],
+    "member": []
   },
   "players": [
   ]
