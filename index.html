@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranked Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #101216;
+    --bg-grid: #17191F;
+    --surface: #1A1D24;
+    --surface-2: #21252D;
+    --border: #2A2E38;
+    --text: #F2F1EC;
+    --text-dim: #8C8F99;
+    --accent: #E85D3D;
+    --accent-glow: rgba(232, 93, 61, 0.25);
+
+    --ht1: #F0654A; --ht1-bg: #3D241C; --ht1-border: #5C3629;
+    --lt1: #ECA23D; --lt1-bg: #3D2F1C; --lt1-border: #5C4829;
+    --ht2: #E8D23D; --ht2-bg: #3A351C; --ht2-border: #575029;
+    --lt2: #9BD84A; --lt2-bg: #26361A; --lt2-border: #3A5227;
+    --ht3: #4AD8A0; --ht3-bg: #1A3630; --ht3-border: #275249;
+    --lt3: #4AC1D8; --lt3-bg: #1A3236; --lt3-border: #274C52;
+    --ht4: #4A8FD8; --ht4-bg: #1A2836; --ht4-border: #273C52;
+    --lt4: #7A6AE0; --lt4-bg: #251F3D; --lt4-border: #382E5C;
+    --ht5: #B06AE0; --ht5-bg: #2E1F3D; --ht5-border: #45305C;
+    --lt5: #6E7180; --lt5-bg: #23262E; --lt5-border: #383C47;
+    --unranked: #5A5D68; --unranked-bg: #1D1F26; --unranked-border: #2E313B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 100% 42px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 42px 100%,
+      var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  .display { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; letter-spacing: -0.01em; }
+  svg { display: block; }
+
+  header { padding: 3.2rem 1.5rem 1.6rem; text-align: center; }
+  header .eyebrow { color: var(--accent); font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+  header h1 { font-size: clamp(2.2rem, 6.5vw, 3.4rem); margin: 0.3rem 0 0.3rem; text-shadow: 0 0 40px var(--accent-glow); }
+  header p { color: var(--text-dim); margin: 0; font-size: 0.9rem; }
+
+  main { max-width: 980px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+  /* ---- Tab bars (shared style for main tabs + subtabs) ---- */
+  .tabbar {
+    display: flex;
+    gap: 0.15rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 0.4rem;
+    margin-bottom: 1.4rem;
+  }
+  .tabbar.subbar { background: transparent; border: none; padding: 0; margin-bottom: 1.6rem; gap: 0.4rem; }
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 0.5rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 68px;
+    transition: all 0.12s ease;
+  }
+  .tab-btn .icon { width: 22px; height: 22px; color: var(--text-dim); }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn:hover .icon { color: var(--text); }
+  .tab-btn.active { color: var(--text); }
+  .tab-btn.active .icon { color: var(--accent); }
+  .tab-btn.active { position: relative; }
+  .tab-btn.active::after {
+    content: ''; position: absolute; bottom: -0.4rem; left: 15%; right: 15%; height: 2px; background: var(--text);
+  }
+
+  .subtab-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 0.4rem 0.8rem;
+    border-radius: 9px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .subtab-btn .icon { width: 15px; height: 15px; }
+  .subtab-btn:hover { color: var(--text); border-color: #3A3F4B; }
+  .subtab-btn.active { background: var(--surface-2); color: var(--text); border-color: var(--accent); }
+  .subtab-btn.active .icon { color: var(--accent); }
+
+  /* ---- Podium ---- */
+  .podium { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; align-items: end; margin-bottom: 1.8rem; }
+  .podium-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.1rem 0.9rem 1.3rem; text-align: center; transition: transform 0.15s ease; }
+  .podium-card:hover { transform: translateY(-3px); }
+  .podium-card.rank-1 { order: 2; padding-top: 1.6rem; border-color: var(--ht1-border); box-shadow: 0 0 30px -8px var(--accent-glow); }
+  .podium-card.rank-2 { order: 1; }
+  .podium-card.rank-3 { order: 3; }
+  .podium-rank { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 0.5rem; }
+  .rank-1 .podium-rank { color: var(--ht1); }
+  .podium-bust { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; background: var(--surface-2); margin: 0 auto 0.6rem; border: 2px solid var(--border); }
+  .rank-1 .podium-bust { width: 84px; height: 84px; border-color: var(--ht1-border); }
+  .podium-bust img { width: 100%; height: 100%; object-fit: cover; object-position: top center; image-rendering: pixelated; }
+  .podium-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.4rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .podium-rating { font-size: 1.6rem; line-height: 1; }
+  .rank-1 .podium-rating { font-size: 2.1rem; color: var(--ht1); }
+
+  /* ---- Controls ---- */
+  .controls { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .controls input, .controls select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.9rem; border-radius: 9px; font-size: 0.9rem; font-family: inherit; }
+  .controls input:focus, .controls select:focus { outline: none; border-color: var(--accent); }
+  .controls input { flex: 1; min-width: 160px; }
+
+  /* ---- Board (row list, replaces the old table) ---- */
+  .board { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .row {
+    display: flex;
+    align-items: stretch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 66px;
+  }
+
+  .rank-flag {
+    width: 58px;
+    min-width: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-style: italic;
+    font-size: 1.5rem;
+    clip-path: polygon(0 0, 100% 0, 76% 100%, 0% 100%);
+  }
+  .rank-flag.r1 { background: linear-gradient(135deg, #F5C24D, #DD8B22); color: #3A2400; }
+  .rank-flag.r2 { background: linear-gradient(135deg, #BCC3CE, #838A97); color: #1C2027; }
+  .rank-flag.r3 { background: linear-gradient(135deg, #E89144, #C15E1B); color: #2B1600; }
+  .rank-flag.rest { background: var(--surface-2); color: var(--text-dim); }
+  .rank-flag.unranked { background: var(--surface-2); color: #4A4D57; font-style: normal; font-weight: 700; }
+
+  .row-body { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 1rem; flex: 1; min-width: 0; }
+
+  .row-bust { width: 42px; height: 42px; border-radius: 9px; overflow: hidden; background: var(--surface-2); flex-shrink: 0; }
+  .row-bust img { width: 100%; height: 100%; object-fit: cover; object-position: top center; image-rendering: pixelated; }
+
+  .row-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .row-name { font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-sub { display: flex; align-items: center; gap: 0.35rem; color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+  .row-sub .icon { width: 13px; height: 13px; color: var(--accent); flex-shrink: 0; }
+  .row-sub .icon svg { width: 100%; height: 100%; }
+  .row-sub .points { color: var(--text-dim); }
+
+  .row-region { margin-left: 0.6rem; flex-shrink: 0; }
+
+  .row-tiers { display: flex; gap: 0.4rem; margin-left: auto; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; max-width: 55%; }
+  .tier-chip { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 34px; }
+  .tier-chip .icon-circle {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--border); background: var(--surface-2);
+  }
+  .tier-chip .icon-circle svg { width: 15px; height: 15px; }
+  .tier-chip .tier-text { font-size: 0.63rem; font-weight: 800; letter-spacing: 0.02em; }
+
+  .row-single-tier { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; flex-shrink: 0; }
+  .row-single-tier .icon-circle { width: 40px; height: 40px; }
+  .row-single-tier .icon-circle svg { width: 20px; height: 20px; }
+  .row-single-tier .rating-num { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 3.2rem; text-align: right; }
+
+  .badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0.6rem; border-radius: 7px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.02em; border: 1px solid transparent; }
+
+  .empty, .error { text-align: center; color: var(--text-dim); padding: 3.5rem 1rem; }
+  footer { text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 2.5rem 1rem 3rem; }
+
+  .row-body { cursor: pointer; }
+
+  /* ---- Profile modal ---- */
+  .profile-overlay {
+    position: fixed; inset: 0; background: rgba(8, 9, 12, 0.72);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50; padding: 1.2rem; backdrop-filter: blur(3px);
+  }
+  .profile-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    max-width: 480px; width: 100%; max-height: 88vh; overflow-y: auto;
+    padding: 1.6rem; position: relative;
+  }
+  .profile-close {
+    position: absolute; top: 1rem; right: 1rem; background: var(--surface-2);
+    border: 1px solid var(--border); color: var(--text-dim); width: 30px; height: 30px;
+    border-radius: 8px; cursor: pointer; font-size: 1rem; line-height: 1;
+  }
+  .profile-close:hover { color: var(--text); }
+  .profile-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+  .profile-bust { width: 72px; height: 72px; border-radius: 12px; overflow: hidden; background: var(--surface-2); border: 2px solid var(--border); flex-shrink: 0; }
+  .profile-bust img { width: 100%; height: 100%; object-fit: cover; object-position: top center; image-rendering: pixelated; }
+  .profile-name { font-size: 1.3rem; font-weight: 700; }
+  .profile-sub { color: var(--text-dim); font-size: 0.85rem; margin-top: 0.2rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+
+  .profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-bottom: 1.4rem; }
+  .stat-box { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.5rem; text-align: center; }
+  .stat-box .value { font-family: 'Barlow Condensed', sans-serif; font-weight: 800; font-size: 1.4rem; }
+  .stat-box .label { color: var(--text-dim); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.15rem; }
+
+  .profile-section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 0.6rem; font-weight: 700; }
+  .profile-tiers { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+  @media (max-width: 640px) {
+    .row-tiers { display: none; }
+    .podium-name { font-size: 0.8rem; }
+    .rank-1 .podium-rating { font-size: 1.7rem; }
+    .podium-rating { font-size: 1.3rem; }
+    .row-region { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Ranked Duels</div>
+  <h1 class="display">Leaderboard</h1>
+  <p id="updated-at">Loading...</p>
+</header>
+
+<main>
+  <div class="tabbar" id="main-tabs"></div>
+  <div class="tabbar subbar" id="subtabs" style="display:none;"></div>
+
+  <div id="podium-slot"></div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Search a player...">
+    <select id="tier-filter" style="display:none;">
+      <option value="">All tiers</option>
+      <option value="HT1">HT1</option><option value="LT1">LT1</option>
+      <option value="HT2">HT2</option><option value="LT2">LT2</option>
+      <option value="HT3">HT3</option><option value="LT3">LT3</option>
+      <option value="HT4">HT4</option><option value="LT4">LT4</option>
+      <option value="HT5">HT5</option><option value="LT5">LT5</option>
+    </select>
+  </div>
+
+  <div id="board" class="board"></div>
+  <div id="empty" class="empty" style="display:none;"><div>No players match that search.</div></div>
+</main>
+
+<footer>Data refreshes automatically from leaderboard.json</footer>
+
+<div id="profile-overlay" class="profile-overlay" style="display:none;">
+  <div class="profile-card" id="profile-card"></div>
+</div>
+
+<script>
+  // Must mirror TIER_FLOORS/TIER_NAMES in RankedTiers.java
+  const TIER_FLOORS = [1600, 1300, 1100, 900, 750, 600, 450, 300, 150, 0];
+  const TIER_NAMES  = ['HT1','LT1','HT2','LT2','HT3','LT3','HT4','LT4','HT5','LT5'];
+  const TIER_POINTS = { HT1:60, LT1:45, HT2:30, LT2:20, HT3:10, LT3:6, HT4:4, LT4:3, HT5:2, LT5:1 };
+
+  const TITLES = [
+    { min: 450, name: 'Combat Grandmaster' },
+    { min: 250, name: 'Combat Master' },
+    { min: 150, name: 'Combat Ace' },
+    { min: 80,  name: 'Combat Specialist' },
+    { min: 30,  name: 'Combat Cadet' },
+    { min: 10,  name: 'Combat Novice' },
+    { min: 0,   name: 'Combat Rookie' },
+  ];
+
+  // ---- Icon set (inline SVG, colored via currentColor) ----
+  const ICONS = {
+    trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><line x1="12" y1="13" x2="12" y2="17"/><path d="M9 17h6l1 4H8z"/></svg>',
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3 8-7 9-4-1-7-4-7-9V6z"/></svg>',
+    crown: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 8l4 3 4-6 4 6 4-3-1.5 9h-13z"/></svg>',
+    sword: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="19" x2="16" y2="8"/><path d="M13 4l4 4-2.2 2.2L11 6.2z"/><line x1="8" y1="16" x2="5" y2="19"/></svg>',
+    axe: '<svg viewBox="0 0 24 24"><line x1="7" y1="20" x2="13" y2="14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 13l5.5-5.5c2.3 1 3.6 3.3 2.6 5.6L14.5 19z" fill="currentColor"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 21s-7.2-4.5-9.7-9C0.6 8 2.5 4.7 6 4.7c2 0 3.4 1.2 4.4 2.6 1-1.4 2.4-2.6 4.4-2.6 3.5 0 5.4 3.3 3.7 7.3-2.5 4.5-6.5 9-6.5 9z"/></svg>',
+    potion: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3h4v3l3 4.5v6.5a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-6.5l3-4.5z"/><circle cx="12" cy="15" r="1.3" fill="currentColor" stroke="none"/></svg>',
+    gem: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 9l6-5 6 5-6 11z"/><line x1="6" y1="9" x2="18" y2="9"/></svg>',
+    pickaxe: '<svg viewBox="0 0 24 24"><line x1="13" y1="13" x2="6.5" y2="20" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M4 8c3.5-4 12.5-4 16 0-2 2.5-4.8 3.2-7 3.5L11 13 8.5 10.5c-1.7 0.6-3.3 0-4.5-2.5z" fill="currentColor"/></svg>',
+    skull: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 10a6 6 0 0 1 12 0v4l-1.5 3h-9L6 14z"/><circle cx="9.5" cy="11" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="11" r="1.1" fill="currentColor" stroke="none"/></svg>',
+    star: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.5l2.9 6 6.6.6-5 4.5 1.4 6.4L12 16.7l-5.9 3.3 1.4-6.4-5-4.5 6.6-.6z"/></svg>',
+    cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="8" rx="1.5"/><circle cx="8" cy="18" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>',
+  };
+
+  function iconKeyForKit(kit) {
+    const k = (kit || '').toLowerCase();
+    if (k.includes('neth')) return 'skull';
+    if (k.includes('sword')) return 'sword';
+    if (k.includes('axe')) return 'axe';
+    if (k.includes('uhc') || k.includes('vanilla')) return 'heart';
+    if (k.includes('pot')) return 'potion';
+    if (k.includes('crystal') || k.includes('gem') || k.includes('ltm')) return 'gem';
+    if (k.includes('mace') || k.includes('pick')) return 'pickaxe';
+    if (k.includes('smp')) return 'star';
+    if (k.includes('cart')) return 'cart';
+    return 'shield';
+  }
+  function iconSvg(key) { return ICONS[key] || ICONS.shield; }
+
+  // Custom kit icon images. Filenames match the kit name (lowercase) exactly.
+  // Upload matching images to an "icons" folder next to this index.html and
+  // they'll be used automatically. If a file isn't there yet, that kit just
+  // falls back to the default vector icon instead of showing a broken image -
+  // so it's safe to leave any of these unfilled while you add images gradually.
+  const CUSTOM_KIT_ICON_URLS = {
+    smp:      'icons/smp.png',
+    sword:    'icons/sword.png',
+    axe:      'icons/axe.png',
+    uhc:      'icons/uhc.png',
+    cart:     'icons/cart.png',
+    pot:      'icons/pot.png',
+    mace:     'icons/mace.png',
+    crystal:  'icons/crystal.png',
+    nethpot:  'icons/nethpot.png',
+    // Add plugin/member kits here the same way once you name them, e.g.:
+    // altarlegendary: 'icons/altarlegendary.png',
+  };
+
+  /** Icon for a specific kit (by kit name) - tries the custom image first,
+   *  falls back to the built-in vector icon if that image doesn't exist. */
+  function kitIconMarkup(kitName) {
+    const key = (kitName || '').toLowerCase();
+    const url = CUSTOM_KIT_ICON_URLS[key];
+    const fallback = iconSvg(iconKeyForKit(kitName));
+    if (!url) return fallback;
+    return `<span style="width:100%;height:100%;display:block;">
+      <img src="${url}" alt="" style="width:100%;height:100%;object-fit:contain;"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span style="display:none;width:100%;height:100%;">${fallback}</span>
+    </span>`;
+  }
+
+  /** Icon for non-kit things (main tab icons: trophy, shield, star, crown). */
+  function iconMarkup(key) { return iconSvg(key); }
+
+  let rawData = null;
+  let state = { tab: 'overall', subKit: null };
+
+  function tierFor(rating) {
+    for (let i = 0; i < TIER_FLOORS.length; i++) if (rating >= TIER_FLOORS[i]) return TIER_NAMES[i];
+    return 'LT5';
+  }
+  function tierClass(tier) {
+    if (!tier || tier === 'Unranked') return 'unranked';
+    return tier.toLowerCase();
+  }
+  function tierColorStyle(tier) {
+    const t = tierClass(tier);
+    return `background: var(--${t}-bg); color: var(--${t}); border-color: var(--${t}-border);`;
+  }
+  function avatarUrl(name, size) { return 'https://mc-heads.net/avatar/' + encodeURIComponent(name) + '/' + size; }
+  function bodyUrl(name, size) { return 'https://mc-heads.net/body/' + encodeURIComponent(name) + '/' + size; }
+  function escapeHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+  const REGION_COLORS = { NA:'#E85D5D', EU:'#4AD87A', AS:'#4A8FD8', OCE:'#B06AE0', SA:'#E8C23D', AF:'#4AC1D8' };
+  function regionBadge(region) {
+    if (!region) return '';
+    const color = REGION_COLORS[region] || 'var(--text-dim)';
+    return `<span class="badge" style="background:${color}22; color:${color}; border-color:${color}55;">${escapeHtml(region)}</span>`;
+  }
+
+  function titleFor(points) {
+    for (const t of TITLES) if (points >= t.min) return t.name;
+    return 'Combat Rookie';
+  }
+
+  function animateNumber(el, target) {
+    const duration = 600, start = performance.now();
+    function tick(now) {
+      const p = Math.min((now - start) / duration, 1);
+      el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /** Standard competition ranking (ties share a rank, e.g. 1,2,2,4). */
+  function assignRanks(rows, keyFn) {
+    let rank = 0, prevKey = null, seen = 0;
+    return rows.map(row => {
+      seen++;
+      const key = keyFn(row);
+      if (key !== prevKey) { rank = seen; prevKey = key; }
+      return { row, rank };
+    });
+  }
+
+  function allKitGroups() {
+    return {
+      regular: rawData.kits.regular || [],
+      plugin: rawData.kits.plugin || [],
+      member: rawData.kits.member || [],
+    };
+  }
+
+  function overallRows() {
+    const groups = allKitGroups();
+    const allKits = [...groups.regular, ...groups.plugin, ...groups.member];
+    const rows = rawData.players.map(p => {
+      let points = 0;
+      const tiers = [];
+      for (const kit of allKits) {
+        if (p.ratings[kit] !== undefined) {
+          const tier = tierFor(p.ratings[kit]);
+          points += TIER_POINTS[tier] || 0;
+          tiers.push({ kit, tier });
+        }
+      }
+      tiers.sort((a, b) => TIER_NAMES.indexOf(a.tier) - TIER_NAMES.indexOf(b.tier));
+      const unranked = tiers.length === 0;
+      return {
+        name: p.name, region: p.region || '', points,
+        title: unranked ? 'Unranked' : titleFor(points),
+        tiers, unranked
+      };
+    }).sort((a, b) => b.points - a.points);
+
+    const ranked = rows.filter(r => !r.unranked);
+    const unranked = rows.filter(r => r.unranked);
+    const rankedResult = assignRanks(ranked, r => r.points);
+    const unrankedResult = unranked.map(row => ({ row, rank: null }));
+    return rankedResult.concat(unrankedResult);
+  }
+
+  function kitRows(kit) {
+    const rows = rawData.players.map(p => {
+      const hasRating = p.ratings[kit] !== undefined;
+      return {
+        name: p.name, region: p.region || '',
+        rating: hasRating ? p.ratings[kit] : null,
+        tier: hasRating ? tierFor(p.ratings[kit]) : 'Unranked',
+        unranked: !hasRating
+      };
+    }).sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    const ranked = rows.filter(r => !r.unranked);
+    const unranked = rows.filter(r => r.unranked);
+    const rankedResult = assignRanks(ranked, r => r.rating);
+    const unrankedResult = unranked.map(row => ({ row, rank: null }));
+    return rankedResult.concat(unrankedResult);
+  }
+
+  // ---- Rendering ----
+  function renderPodiumFromRanked(ranked, valueKey, isOverall) {
+    const slot = document.getElementById('podium-slot');
+    if (ranked.length === 0) { slot.innerHTML = ''; return; }
+    const top3 = ranked.slice(0, 3);
+    slot.innerHTML = '<div class="podium">' + top3.map(({row: p}, i) => `
+      <div class="podium-card rank-${i + 1}">
+        <div class="podium-rank">#${i + 1}</div>
+        <div class="podium-bust"><img src="${bodyUrl(p.name, i === 0 ? 84 : 64)}" alt="" onerror="this.style.visibility='hidden'"></div>
+        <div class="podium-name">${escapeHtml(p.name)}</div>
+        ${isOverall ? `<div style="color: var(--text-dim); font-size: 0.72rem; margin-bottom: 0.3rem;">${p.title}</div>` :
+          `<span class="badge" style="${tierColorStyle(p.tier)}">${p.tier}</span>`}
+        <div class="podium-rating display" data-target="${p[valueKey]}">0</div>
+      </div>
+    `).join('') + '</div>';
+    slot.querySelectorAll('.podium-rating').forEach(el => animateNumber(el, parseInt(el.dataset.target, 10)));
+  }
+
+  function tierChipHtml(kit, tier) {
+    return `
+      <div class="tier-chip" title="${escapeHtml(kit)}: ${tier}">
+        <div class="icon-circle" style="${tierColorStyle(tier)}">${kitIconMarkup(kit)}</div>
+        <div class="tier-text" style="color: var(--${tierClass(tier)});">${tier}</div>
+      </div>`;
+  }
+
+  function render() {
+    const search = document.getElementById('search').value.trim().toLowerCase();
+    const boardEl = document.getElementById('board');
+    const emptyEl = document.getElementById('empty');
+
+    if (state.tab === 'overall') {
+      document.getElementById('tier-filter').style.display = 'none';
+      const full = overallRows();
+      const filtered = full.filter(({row: p}) => !search || p.name.toLowerCase().includes(search));
+      renderPodiumFromRanked(full, 'points', true);
+
+      if (filtered.length === 0) { boardEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+      emptyEl.style.display = 'none';
+
+      boardEl.innerHTML = filtered.map(({row: p, rank}) => {
+        const flagClass = rank === null ? 'unranked' : rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : 'rest';
+        const rankLabel = rank === null ? '-' : rank + '.';
+        return `
+        <div class="row">
+          <div class="rank-flag ${flagClass}">${rankLabel}</div>
+          <div class="row-body" data-player="${escapeHtml(p.name)}">
+            <div class="row-bust"><img src="${bodyUrl(p.name, 42)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></div>
+            <div class="row-id">
+              <div class="row-name">${escapeHtml(p.name)}</div>
+              <div class="row-sub"><span class="icon">${iconMarkup('gem')}</span> ${p.title}${p.unranked ? '' : ` <span class="points">(${p.points} points)</span>`}</div>
+            </div>
+            <div class="row-region">${regionBadge(p.region)}</div>
+            <div class="row-tiers">${p.tiers.map(t => tierChipHtml(t.kit, t.tier)).join('')}</div>
+          </div>
+        </div>`;
+      }).join('');
+      return;
+    }
+
+    // Regular / Plugin / Member kit sub-view
+    document.getElementById('tier-filter').style.display = '';
+    const tierFilter = document.getElementById('tier-filter').value;
+    const full = kitRows(state.subKit);
+    const filtered = full.filter(({row: p}) => {
+      const matchesSearch = !search || p.name.toLowerCase().includes(search);
+      const matchesTier = !tierFilter || p.tier === tierFilter;
+      return matchesSearch && matchesTier;
+    });
+    renderPodiumFromRanked(full, 'rating', false);
+
+    if (filtered.length === 0) { boardEl.innerHTML = ''; emptyEl.style.display = 'block'; return; }
+    emptyEl.style.display = 'none';
+
+    boardEl.innerHTML = filtered.map(({row: p, rank}) => {
+      const flagClass = rank === null ? 'unranked' : rank === 1 ? 'r1' : rank === 2 ? 'r2' : rank === 3 ? 'r3' : 'rest';
+      const rankLabel = rank === null ? '-' : rank + '.';
+      return `
+      <div class="row">
+        <div class="rank-flag ${flagClass}">${rankLabel}</div>
+        <div class="row-body" data-player="${escapeHtml(p.name)}">
+          <div class="row-bust"><img src="${bodyUrl(p.name, 42)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"></div>
+          <div class="row-id">
+            <div class="row-name">${escapeHtml(p.name)}</div>
+            <div class="row-sub"><span class="icon">${iconMarkup('gem')}</span> ${p.unranked ? 'No games played' : p.tier + ' rating'}</div>
+          </div>
+          <div class="row-region">${regionBadge(p.region)}</div>
+          <div class="row-single-tier">
+            <div class="icon-circle" style="${tierColorStyle(p.tier)}">${kitIconMarkup(state.subKit)}</div>
+            <div class="rating-num">${p.unranked ? '-' : p.rating}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderMainTabs() {
+    const groups = allKitGroups();
+    const tabs = [
+      { id: 'overall', label: 'Overall', icon: 'trophy' },
+      { id: 'regular', label: 'Regular Kits', icon: 'shield' },
+      { id: 'plugin', label: 'Plugin Kits', icon: 'star' },
+      { id: 'member', label: 'Member Kits', icon: 'crown' },
+    ];
+    document.getElementById('main-tabs').innerHTML = tabs.map(t => `
+      <button class="tab-btn ${state.tab === t.id ? 'active' : ''}" data-tab="${t.id}">
+        <span class="icon">${iconMarkup(t.icon)}</span>${t.label}
+      </button>
+    `).join('');
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+  }
+
+  function renderSubtabs() {
+    const subtabsEl = document.getElementById('subtabs');
+    if (state.tab === 'overall') {
+      subtabsEl.style.display = 'none';
+      subtabsEl.innerHTML = '';
+      return;
+    }
+    const groups = allKitGroups();
+    const kitList = groups[state.tab] || [];
+    if (kitList.length === 0) {
+      subtabsEl.style.display = 'none';
+      document.getElementById('podium-slot').innerHTML = '';
+      document.getElementById('board').innerHTML = '';
+      document.getElementById('empty').style.display = 'block';
+      document.getElementById('empty').innerHTML = `<div>No ${state.tab} kits configured yet.</div>`;
+      return;
+    }
+    if (!state.subKit || !kitList.includes(state.subKit)) state.subKit = kitList[0];
+
+    subtabsEl.style.display = 'flex';
+    subtabsEl.innerHTML = kitList.map(k => `
+      <button class="subtab-btn ${k === state.subKit ? 'active' : ''}" data-kit="${escapeHtml(k)}">
+        <span class="icon">${kitIconMarkup(k)}</span>${escapeHtml(k)}
+      </button>
+    `).join('');
+    subtabsEl.querySelectorAll('.subtab-btn').forEach(btn => {
+      btn.addEventListener('click', () => { state.subKit = btn.dataset.kit; renderSubtabs(); render(); });
+    });
+  }
+
+  function setTab(tab) {
+    state.tab = tab;
+    renderMainTabs();
+    renderSubtabs();
+    render();
+  }
+
+  document.getElementById('search').addEventListener('input', render);
+  document.getElementById('tier-filter').addEventListener('change', render);
+
+  // ---- Player profile modal ----
+  function openProfile(name) {
+    const player = rawData.players.find(p => p.name === name);
+    if (!player) return;
+
+    const groups = allKitGroups();
+    const allKits = [...groups.regular, ...groups.plugin, ...groups.member];
+    let points = 0;
+    const tiers = [];
+    for (const kit of allKits) {
+      if (player.ratings[kit] !== undefined) {
+        const tier = tierFor(player.ratings[kit]);
+        points += TIER_POINTS[tier] || 0;
+        tiers.push({ kit, tier, rating: player.ratings[kit] });
+      }
+    }
+    tiers.sort((a, b) => TIER_NAMES.indexOf(a.tier) - TIER_NAMES.indexOf(b.tier));
+
+    const kills = player.kills || 0;
+    const deaths = player.deaths || 0;
+    const kd = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toFixed(2);
+
+    document.getElementById('profile-card').innerHTML = `
+      <button class="profile-close" onclick="closeProfile()">&times;</button>
+      <div class="profile-header">
+        <div class="profile-bust"><img src="${bodyUrl(player.name, 72)}" alt="" onerror="this.style.visibility='hidden'"></div>
+        <div>
+          <div class="profile-name">${escapeHtml(player.name)}</div>
+          <div class="profile-sub">${regionBadge(player.region)} <span>${tiers.length === 0 ? 'Unranked' : titleFor(points) + ' (' + points + ' pts)'}</span></div>
+        </div>
+      </div>
+      <div class="profile-stats">
+        <div class="stat-box"><div class="value">${kills}</div><div class="label">Kills</div></div>
+        <div class="stat-box"><div class="value">${deaths}</div><div class="label">Deaths</div></div>
+        <div class="stat-box"><div class="value">${kd}</div><div class="label">K/D</div></div>
+        <div class="stat-box"><div class="value">${tiers.length}</div><div class="label">Kits played</div></div>
+      </div>
+      <div class="profile-section-title">Tiers by kit</div>
+      <div class="profile-tiers">
+        ${tiers.map(t => `
+          <div class="tier-chip" title="${escapeHtml(t.kit)}: ${t.tier} (${t.rating} rating)">
+            <div class="icon-circle" style="${tierColorStyle(t.tier)}">${kitIconMarkup(t.kit)}</div>
+            <div class="tier-text" style="color: var(--${tierClass(t.tier)});">${t.tier}</div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    document.getElementById('profile-overlay').style.display = 'flex';
+  }
+
+  function closeProfile() {
+    document.getElementById('profile-overlay').style.display = 'none';
+  }
+
+  document.getElementById('board').addEventListener('click', (e) => {
+    const body = e.target.closest('.row-body');
+    if (body && body.dataset.player) openProfile(body.dataset.player);
+  });
+  document.getElementById('profile-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'profile-overlay') closeProfile();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeProfile();
+  });
+
+  async function loadData() {
+    try {
+      const res = await fetch('leaderboard.json?_=' + Date.now());
+      if (!res.ok) throw new Error('Could not load leaderboard.json');
+      rawData = await res.json();
+      document.getElementById('updated-at').textContent =
+        'Updated ' + new Date(rawData.generatedAt || Date.now()).toLocaleString();
+      renderMainTabs();
+      renderSubtabs();
+      render();
+    } catch (err) {
+      document.getElementById('updated-at').textContent = '';
+      document.querySelector('main').innerHTML =
+        '<div class="error">Could not load leaderboard.json.<br>Make sure it is sitting next to this index.html file.</div>';
+    }
+  }
+
+  loadData();
+  setInterval(loadData, 60000);
+</script>
+
+</body>
+</html>
