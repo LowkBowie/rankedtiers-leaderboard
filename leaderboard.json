@@ -1,0 +1,15 @@
+{
+  "generatedAt": "2026-08-01T12:00:00Z",
+  "kits": {
+    "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
+    "plugin": [],
+    "member": []
+  },
+  "players": [
+    { "name": "LowkBowie", "region": "NA", "kills": 341, "deaths": 122, "ratings": { "Sword": 1680, "Axe": 1450, "SMP": 1200, "Pot": 900, "UHC": 700 } },
+    { "name": "ChoppedNugget", "region": "EU", "kills": 210, "deaths": 190, "ratings": { "Sword": 1210, "Axe": 800, "Crystal": 600, "Mace": 300 } },
+    { "name": "ExamplePlayer", "region": "AS", "kills": 98, "deaths": 140, "ratings": { "Sword": 820, "SMP": 500, "UHC": 400 } },
+    { "name": "AnotherOne", "region": "NA", "kills": 40, "deaths": 55, "ratings": { "Sword": 340, "Pot": 200 } },
+    { "name": "NewGuy", "region": "", "kills": 3, "deaths": 9, "ratings": { "Sword": 56 } }
+  ]
+}
