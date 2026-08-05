@@ -1,11 +1,12 @@
 {
-  "generatedAt": "2026-08-05T09:22:41.116123129Z",
+  "generatedAt": "2026-08-05T09:30:02.915447824Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
-    { "name": "ChoppedNugget", "region": "EU", "kills": 0, "deaths": 14, "ratings": {} }
+    { "name": "ChoppedNugget", "region": "EU", "kills": 0, "deaths": 15, "ratings": {} },
+    { "name": "LowkBowie", "region": "EU", "kills": 29, "deaths": 1, "ratings": {} }
   ]
 }
