@@ -1,10 +1,12 @@
 {
-  "generatedAt": "2026-08-05T14:32:41.115275672Z",
+  "generatedAt": "2026-08-05T14:42:41.115279642Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
+    { "name": "_xngel", "region": "EU", "kills": 0, "deaths": 0, "ratings": {} },
+    { "name": "ShadowStyxz", "region": "EU", "kills": 28, "deaths": 18, "ratings": {} }
   ]
 }
