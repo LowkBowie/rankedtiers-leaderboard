@@ -1,10 +1,11 @@
 {
-  "generatedAt": "2026-08-09T22:46:30.083977701Z",
+  "generatedAt": "2026-08-09T22:56:30.083905060Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
+    { "name": "hzap", "region": "EU", "kills": 3, "deaths": 2, "ratings": {} }
   ]
 }
