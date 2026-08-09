@@ -1,10 +1,12 @@
 {
-  "generatedAt": "2026-08-09T18:24:53.446254114Z",
+  "generatedAt": "2026-08-09T18:29:59.808178552Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
+    { "name": "LowkBowie", "region": "EU", "kills": 29, "deaths": 2, "ratings": {} },
+    { "name": "TrollerMc77", "region": "EU", "kills": 0, "deaths": 0, "ratings": {} }
   ]
 }
