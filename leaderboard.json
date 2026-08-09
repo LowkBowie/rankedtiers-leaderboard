@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-09T17:58:07.761138991Z",
+  "generatedAt": "2026-08-09T18:08:07.761031071Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
@@ -7,6 +7,6 @@
   },
   "players": [
     { "name": "LowkBowie", "region": "EU", "kills": 29, "deaths": 1, "ratings": {} },
-    { "name": "Endlss_", "region": "EU", "kills": 0, "deaths": 0, "ratings": {} }
+    { "name": "Endlss_", "region": "EU", "kills": 0, "deaths": 1, "ratings": {} }
   ]
 }
