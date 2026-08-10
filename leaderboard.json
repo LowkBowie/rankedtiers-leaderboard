@@ -1,10 +1,12 @@
 {
-  "generatedAt": "2026-08-10T16:46:30.083872827Z",
+  "generatedAt": "2026-08-10T16:56:30.083847329Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
+    { "name": "Nangato_", "region": "GE", "kills": 3, "deaths": 1, "ratings": {} },
+    { "name": "LowkBowie", "region": "EU", "kills": 33, "deaths": 8, "ratings": {} }
   ]
 }
