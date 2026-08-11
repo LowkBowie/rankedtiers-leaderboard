@@ -1,12 +1,10 @@
 {
-  "generatedAt": "2026-08-11T16:06:30.083936876Z",
+  "generatedAt": "2026-08-11T16:16:30.084053359Z",
   "kits": {
     "regular": ["SMP", "Sword", "Axe", "UHC", "Cart", "Pot", "Mace", "Crystal", "NethPot"],
     "plugin": [],
     "member": []
   },
   "players": [
-    { "name": "WhemLovesRem", "region": "EU", "kills": 0, "deaths": 1, "ratings": {} },
-    { "name": "LowkBowie", "region": "EU", "kills": 41, "deaths": 9, "ratings": {} }
   ]
 }
